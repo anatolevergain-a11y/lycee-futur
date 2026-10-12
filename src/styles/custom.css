@@ -1,0 +1,81 @@
+/* Couleurs personnalisées pour le thème clair et sombre */
+:root {
+	--sl-color-accent-low: #e0f2fe;
+	--sl-color-accent: #0284c7;
+	--sl-color-accent-high: #0369a1;
+	--sl-color-white: #0f172a;
+}
+
+:root[data-theme='dark'] {
+	--sl-color-accent-low: #082f49;
+	--sl-color-accent: #38bdf8;
+	--sl-color-accent-high: #bae6fd;
+	--sl-color-white: #f8fafc;
+}
+
+/* Amélioration de la lisibilité du contenu */
+.sl-markdown-content h2 {
+	border-bottom: 2px solid var(--sl-color-accent);
+	padding-bottom: 0.3rem;
+	margin-top: 2rem;
+}
+
+/* Style des encadrés de formule LaTeX */
+.katex-display {
+	background-color: var(--sl-color-gray-6);
+	padding: 1rem;
+	border-radius: 0.5rem;
+	overflow-x: auto;
+}
+/* Lisibilité accrue et espacement des paragraphes */
+.sl-markdown-content p {
+  line-height: 1.75;
+  font-size: 1.05rem;
+}
+
+/* Encadrés de formules LaTeX responsives et épurés */
+.katex-display {
+  background-color: var(--sl-color-gray-6);
+  border-left: 4px solid var(--sl-color-accent);
+  padding: 1.2rem;
+  border-radius: 0 0.5rem 0.5rem 0;
+  overflow-x: auto;
+}
+
+/* Mise en valeur des blocs d'avertissements et conseils */
+.starlight-aside--warning {
+  border-left-color: #f59e0b;
+}
+
+/* Boutons de navigation d'exercices */
+.sl-markdown-content a[href*="exercice"] {
+  font-weight: 600;
+  color: var(--sl-color-accent-high);
+}
+/* 🖨️ Optimization pour l'impression et l'export PDF en 1 clic */
+@media print {
+  /* Masquer la navigation, le header, la sidebar et le footer */
+  header, sidebar, nav, .sl-sidebar, .header-content, .pagination-links {
+    display: none !important;
+  }
+
+  /* Adapter le contenu principal sur toute la largeur de la page */
+  main, .sl-container, .main-frame {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* Améliorer la lisibilité du texte et du LaTeX */
+  body {
+    background: #ffffff !important;
+    color: #000000 !important;
+    font-size: 12pt;
+  }
+
+  .katex-display {
+    border-left: 2px solid #000 !important;
+    background: #f8f9fa !important;
+  }
+}
