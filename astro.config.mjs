@@ -23,6 +23,23 @@ export default defineConfig({
 			title: 'Lycée Futur',
 			description: 'Plateforme gratuite de cours, exercices corrigés et sujets du Bac.',
 			head: [
+				// 📊 Google Analytics (GA4)
+        {
+          tag: 'script',
+          attrs: {
+            async: true,
+            src: 'https://www.googletagmanager.com/gtag/js?id=G-NE4ZY1WE8C',
+          },
+        },
+        {
+          tag: 'script',
+          content: `
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-NE4ZY1WE8C');
+          `,
+        },
 				// Link pour le style des formules mathématiques KaTeX
 				{
 					tag: 'link',
@@ -40,6 +57,7 @@ export default defineConfig({
 						crossorigin: 'anonymous',
 					},
 				},
+		
 			],
 			sidebar: [
 				{
