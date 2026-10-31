@@ -1,0 +1,6 @@
+{
+  "name": "Lycée Futur",
+  "description": "Plateforme interactive des programmes officiels du Lycée en Mathématiques, Physique-Chimie et SVT. Cours interactifs, simulations de laboratoire, exercices corrigés et outils de révision personnalisés pour le Bac.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

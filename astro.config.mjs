@@ -6,24 +6,48 @@ import rehypeKatex from 'rehype-katex';
 import sitemap from '@astrojs/sitemap';
 
 export default defineConfig({
-	site: 'https://lyceefutur.com',
-	markdown: {
-		remarkPlugins: [remarkMath],
-		rehypePlugins: [
-			[
-				rehypeKatex,
-				{
-					strict: false,
-				},
-			],
-		],
-	},
-	integrations: [
-		starlight({
-			title: 'Lycée Futur',
-			description: 'Plateforme gratuite de cours, exercices corrigés et sujets du Bac.',
-			head: [
-				// 📊 Google Analytics (GA4)
+  // 1. Nom de domaine officiel (nécessaire pour générer le sitemap)
+  site: 'https://lyceefutur.com',
+
+  // 2. Prise en charge des formules mathématiques (LaTeX)
+  markdown: {
+    remarkPlugins: [remarkMath],
+    rehypePlugins: [
+      [
+        rehypeKatex,
+        {
+          strict: false,
+        },
+      ],
+    ],
+  },
+
+  integrations: [
+    starlight({
+      title: 'Lycée Futur',
+      description: 'Plateforme gratuite de cours, exercices corrigés et sujets du Bac.',
+
+      head: [
+        // Style pour l'affichage des formules mathématiques KaTeX
+        {
+          tag: 'link',
+          attrs: {
+            rel: 'stylesheet',
+            href: 'https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css',
+          },
+        },
+
+        // 📢 Google AdSense (Remplacez ca-pub-XXXXXXXXXXXXXXXX par votre vrai ID)
+        {
+          tag: 'script',
+          attrs: {
+            async: true,
+            src: 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9036203782966082',
+            crossorigin: 'anonymous',
+          },
+        },
+
+        // 📊 Google Analytics GA4 (Remplacez G-XXXXXXXXXX par votre ID de mesure)
         {
           tag: 'script',
           attrs: {
@@ -40,49 +64,11 @@ export default defineConfig({
             gtag('config', 'G-NE4ZY1WE8C');
           `,
         },
-				// Link pour le style des formules mathématiques KaTeX
-				{
-					tag: 'link',
-					attrs: {
-						rel: 'stylesheet',
-						href: 'https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css',
-					},
-				},
-				// 📢 EXTRAIT GOOGLE ADSENSE (Injecté sur 100% des pages)
-				{
-					tag: 'script',
-					attrs: {
-						async: true,
-						src: 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9036203782966082',
-						crossorigin: 'anonymous',
-					},
-				},
-		
-			],
-			sidebar: [
-				{
-					label: '📚 Seconde',
-					collapsed: true,
-					items: [
-						{ autogenerate: { directory: 'seconde', collapsed: true } }
-					],
-				},
-				{
-					label: '🚀 Première',
-					collapsed: true,
-					items: [
-						{ autogenerate: { directory: 'premiere', collapsed: true } }
-					],
-				},
-				{
-					label: '🎓 Terminale',
-					collapsed: true,
-					items: [
-						{ autogenerate: { directory: 'terminale', collapsed: true } }
-					],
-				},
-			],
-		}),
-		sitemap(),
-	],
+      ],
+
+    }),
+
+    // 4. Plugin de génération automatique du Sitemap
+    sitemap(),
+  ],
 });
