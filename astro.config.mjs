@@ -6,10 +6,8 @@ import rehypeKatex from 'rehype-katex';
 import sitemap from '@astrojs/sitemap';
 
 export default defineConfig({
-  // 1. Nom de domaine officiel (nécessaire pour générer le sitemap)
   site: 'https://lyceefutur.com',
 
-  // 2. Prise en charge des formules mathématiques (LaTeX)
   markdown: {
     remarkPlugins: [remarkMath],
     rehypePlugins: [
@@ -27,8 +25,12 @@ export default defineConfig({
       title: 'Lycée Futur',
       description: 'Plateforme gratuite de cours, exercices corrigés et sujets du Bac.',
 
+      customCss: [
+        './src/styles/custom.css',
+      ],
+
       head: [
-        // Style pour l'affichage des formules mathématiques KaTeX
+        // Style mathématique KaTeX
         {
           tag: 'link',
           attrs: {
@@ -37,7 +39,7 @@ export default defineConfig({
           },
         },
 
-        // 📢 Google AdSense (Remplacez ca-pub-XXXXXXXXXXXXXXXX par votre vrai ID)
+        // Google AdSense
         {
           tag: 'script',
           attrs: {
@@ -47,7 +49,7 @@ export default defineConfig({
           },
         },
 
-        // 📊 Google Analytics GA4 (Remplacez G-XXXXXXXXXX par votre ID de mesure)
+        // Google Analytics (GA4)
         {
           tag: 'script',
           attrs: {
@@ -65,10 +67,8 @@ export default defineConfig({
           `,
         },
       ],
-
     }),
 
-    // 4. Plugin de génération automatique du Sitemap
     sitemap(),
   ],
 });
