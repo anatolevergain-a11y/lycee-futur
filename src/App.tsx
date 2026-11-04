@@ -827,6 +827,13 @@ export default function App() {
                         </button>
                       ))}
                     </div>
+
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-semibold px-3 py-1 rounded-full bg-violet-50 dark:bg-violet-950/70 text-violet-700 dark:text-violet-300 border border-violet-200 dark:border-violet-800 flex items-center gap-1.5">
+                        <Sparkles className="w-3 h-3 text-violet-500" />
+                        <span>{filteredThemedExercises.length} exercices corrigés</span>
+                      </span>
+                    </div>
                   </div>
                 </div>
 

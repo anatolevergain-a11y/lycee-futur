@@ -7,8 +7,9 @@ import { COMPLETE_CHAPTERS_PART2 } from './completeCurriculumPart2';
 import { COMPLETE_CHAPTERS_PART3 } from './completeCurriculumPart3';
 import { OFFICIAL_REGISTRY_PART1 } from './officialCurriculumRegistryPart1';
 import { OFFICIAL_REGISTRY_PART2 } from './officialCurriculumRegistryPart2';
+import { enrichChaptersWithBankExercises } from './exerciseRegistry';
 
-export const CURRICULUM_CHAPTERS: Chapter[] = [
+const BASE_CURRICULUM_CHAPTERS: Chapter[] = [
   // =========================================================================
   // SECONDE (2nde) - MATHÉMATIQUES
   // =========================================================================
@@ -2369,3 +2370,6 @@ export const CURRICULUM_CHAPTERS: Chapter[] = [
   ...OFFICIAL_REGISTRY_PART1,
   ...OFFICIAL_REGISTRY_PART2
 ];
+
+export const CURRICULUM_CHAPTERS: Chapter[] = enrichChaptersWithBankExercises(BASE_CURRICULUM_CHAPTERS);
+
