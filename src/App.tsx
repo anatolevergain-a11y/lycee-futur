@@ -30,14 +30,10 @@ import {
   Sun,
   Moon,
   Zap,
-  Flame,
   CheckCircle,
   Clock,
   Sparkles,
   ArrowRight,
-  Filter,
-  Layers,
-  Award,
   Search,
   Gamepad2,
   Rocket,
@@ -52,6 +48,39 @@ import {
   LayoutGrid,
   List
 } from 'lucide-react';
+
+type SectionId = 'curriculum' | 'simulations' | 'exercises' | 'revision' | 'profile';
+
+const SECTION_PATHS: Record<SectionId, string> = {
+  curriculum: '/',
+  simulations: '/simulateurs',
+  exercises: '/exercices',
+  revision: '/outils-bac',
+  profile: '/profil'
+};
+
+function getInitialRouteState(): {
+  section: SectionId;
+  chapterId: string | null;
+  grade: GradeLevel;
+} {
+  if (typeof window === 'undefined') {
+    return { section: 'curriculum', chapterId: null, grade: 'terminale' };
+  }
+  const path = window.location.pathname.replace(/\/+$/, '') || '/';
+  if (path.startsWith('/chapitre/')) {
+    const slug = decodeURIComponent(path.replace('/chapitre/', ''));
+    const found = CURRICULUM_CHAPTERS.find((c) => c.id === slug);
+    if (found) {
+      return { section: 'curriculum', chapterId: found.id, grade: found.gradeLevel };
+    }
+  }
+  if (path === '/simulateurs') return { section: 'simulations', chapterId: null, grade: 'terminale' };
+  if (path === '/exercices') return { section: 'exercises', chapterId: null, grade: 'terminale' };
+  if (path === '/outils-bac') return { section: 'revision', chapterId: null, grade: 'terminale' };
+  if (path === '/profil') return { section: 'profile', chapterId: null, grade: 'terminale' };
+  return { section: 'curriculum', chapterId: null, grade: 'terminale' };
+}
 
 const INITIAL_PROGRESS: UserProgress = {
   xp: 120,
@@ -76,6 +105,8 @@ const INITIAL_PROGRESS: UserProgress = {
 };
 
 export default function App() {
+  const initialRoute = getInitialRouteState();
+
   // Theme state
   const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
     return localStorage.getItem('lycee_futur_theme') === 'dark' ||
@@ -83,18 +114,16 @@ export default function App() {
   });
 
   // Top Nav Active Section
-  const [currentSection, setCurrentSection] = useState<
-    'curriculum' | 'simulations' | 'exercises' | 'revision' | 'profile'
-  >('curriculum');
+  const [currentSection, setCurrentSection] = useState<SectionId>(initialRoute.section);
 
   // Active Subject Filter in Curriculum
   const [selectedSubject, setSelectedSubject] = useState<SubjectId | 'all'>('all');
 
   // Active Grade Level (2nde, 1ère, Terminale)
-  const [selectedGrade, setSelectedGrade] = useState<GradeLevel>('terminale');
+  const [selectedGrade, setSelectedGrade] = useState<GradeLevel>(initialRoute.grade);
 
   // Currently opened Chapter in full interactive view
-  const [openedChapterId, setOpenedChapterId] = useState<string | null>(null);
+  const [openedChapterId, setOpenedChapterId] = useState<string | null>(initialRoute.chapterId);
 
   // Currently active simulation in Lab view
   const [activeSimulationId, setActiveSimulationId] = useState<string>('titration');
@@ -107,7 +136,7 @@ export default function App() {
   // Search query for curriculum
   const [searchQuery, setSearchQuery] = useState<string>('');
 
-  // Compact uncluttered view for curriculum (defaults to true for a cleaner, lighter experience)
+  // Compact uncluttered view for curriculum
   const [isCompactView, setIsCompactView] = useState<boolean>(true);
 
   // Active theme filter for exercises tab
@@ -133,6 +162,47 @@ export default function App() {
   // Notification toast for XP gains
   const [xpToast, setXpToast] = useState<{ amount: number; reason: string } | null>(null);
 
+  // Navigation helpers with URL History API sync
+  const navigateSection = (section: SectionId) => {
+    setCurrentSection(section);
+    setOpenedChapterId(null);
+    const targetPath = SECTION_PATHS[section];
+    if (window.location.pathname !== targetPath) {
+      window.history.pushState({}, '', targetPath);
+    }
+  };
+
+  const openChapter = (chapterId: string) => {
+    setOpenedChapterId(chapterId);
+    const targetPath = `/chapitre/${encodeURIComponent(chapterId)}`;
+    if (window.location.pathname !== targetPath) {
+      window.history.pushState({}, '', targetPath);
+    }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const closeChapter = () => {
+    setOpenedChapterId(null);
+    const targetPath = SECTION_PATHS[currentSection];
+    if (window.location.pathname !== targetPath) {
+      window.history.pushState({}, '', targetPath);
+    }
+  };
+
+  // Handle browser Back / Forward buttons
+  useEffect(() => {
+    const handlePopState = () => {
+      const route = getInitialRouteState();
+      setCurrentSection(route.section);
+      setOpenedChapterId(route.chapterId);
+      if (route.chapterId) {
+        setSelectedGrade(route.grade);
+      }
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
   // Sync theme with DOM
   useEffect(() => {
     if (isDarkMode) {
@@ -148,6 +218,105 @@ export default function App() {
   useEffect(() => {
     localStorage.setItem('lycee_futur_progress', JSON.stringify(progress));
   }, [progress]);
+
+  const openedChapter = CURRICULUM_CHAPTERS.find((c) => c.id === openedChapterId);
+
+  // Dynamic SEO Metadata & JSON-LD Structured Data per page/chapter
+  useEffect(() => {
+    const baseUrl = 'https://lyceefutur.com';
+    let title = 'Lycée Futur | Cours, Exercices Corrigés & Simulations (Seconde, Première, Terminale)';
+    let description =
+      'Plateforme gratuite d’excellence pour le lycée : cours complets des programmes officiels de Maths, Physique-Chimie et SVT, simulations visuelles de laboratoire et exercices corrigés du Bac.';
+    let canonicalUrl = `${baseUrl}${SECTION_PATHS[currentSection]}`;
+
+    if (openedChapter) {
+      const subjectLabel =
+        openedChapter.subjectId === 'maths'
+          ? 'Mathématiques'
+          : openedChapter.subjectId === 'physique-chimie'
+          ? 'Physique-Chimie'
+          : 'SVT';
+      const gradeLabel =
+        openedChapter.gradeLevel === 'terminale'
+          ? 'Terminale'
+          : openedChapter.gradeLevel === '1ere'
+          ? 'Première'
+          : 'Seconde';
+
+      title = `${openedChapter.title} - Cours & Exercices Corrigés (${gradeLabel} ${subjectLabel}) | Lycée Futur`;
+      description =
+        openedChapter.description ||
+        `Révisez le chapitre ${openedChapter.title} en ${gradeLabel} (${subjectLabel}) : fiche de cours complète, formules clés et exercices corrigés du Bac.`;
+      canonicalUrl = `${baseUrl}/chapitre/${encodeURIComponent(openedChapter.id)}`;
+    } else if (currentSection === 'simulations') {
+      title = 'Simulateurs Scientifiques Interactifs (Maths, Physique-Chimie, SVT) | Lycée Futur';
+      description =
+        'Expérimentez en direct avec 22 simulateurs interactifs de laboratoire pour le lycée : titrage acide-base, mécanique, optique, fonctions et probabilités.';
+    } else if (currentSection === 'exercises') {
+      title = '372 Exercices Corrigés Type Bac & Thèmes Passionnants | Lycée Futur';
+      description =
+        'Entraînez-vous sur 372 exercices corrigés pas à pas avec indices et pièges du Bac en Maths, Physique-Chimie et SVT.';
+    } else if (currentSection === 'revision') {
+      title = 'Outils de Révision Bac, Simulateur de Notes & Flashcards | Lycée Futur';
+      description =
+        'Préparez le Baccalauréat avec 51 outils de révision : simulateur de moyenne Bac coef 100, fiches flash, minuteur Pomodoro et formulaires.';
+    }
+
+    document.title = title;
+
+    const setMeta = (selector: string, attr: string, value: string) => {
+      let el = document.querySelector(selector);
+      if (!el) {
+        el = document.createElement('meta');
+        const [attrName, attrVal] = attr.split('=');
+        el.setAttribute(attrName, attrVal.replace(/"/g, ''));
+        document.head.appendChild(el);
+      }
+      el.setAttribute('content', value);
+    };
+
+    setMeta('meta[name="description"]', 'name="description"', description);
+    setMeta('meta[property="og:title"]', 'property="og:title"', title);
+    setMeta('meta[property="og:description"]', 'property="og:description"', description);
+    setMeta('meta[property="og:url"]', 'property="og:url"', canonicalUrl);
+
+    let canonicalEl = document.querySelector('link[rel="canonical"]');
+    if (!canonicalEl) {
+      canonicalEl = document.createElement('link');
+      canonicalEl.setAttribute('rel', 'canonical');
+      document.head.appendChild(canonicalEl);
+    }
+    canonicalEl.setAttribute('href', canonicalUrl);
+
+    // Dynamic Course Schema.org JSON-LD when viewing a chapter
+    const existingJsonLd = document.getElementById('dynamic-course-jsonld');
+    if (openedChapter) {
+      const schemaData = {
+        '@context': 'https://schema.org',
+        '@type': 'Course',
+        name: openedChapter.title,
+        description,
+        url: canonicalUrl,
+        educationalLevel: openedChapter.gradeLevel,
+        provider: {
+          '@type': 'EducationalOrganization',
+          name: 'Lycée Futur',
+          sameAs: baseUrl
+        }
+      };
+      if (existingJsonLd) {
+        existingJsonLd.textContent = JSON.stringify(schemaData);
+      } else {
+        const script = document.createElement('script');
+        script.id = 'dynamic-course-jsonld';
+        script.type = 'application/ld+json';
+        script.textContent = JSON.stringify(schemaData);
+        document.head.appendChild(script);
+      }
+    } else if (existingJsonLd) {
+      existingJsonLd.remove();
+    }
+  }, [openedChapter, currentSection]);
 
   // Gain XP handler
   const handleGainXp = (amount: number, reason: string) => {
@@ -270,8 +439,6 @@ export default function App() {
     return true;
   });
 
-  const openedChapter = CURRICULUM_CHAPTERS.find((c) => c.id === openedChapterId);
-
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex flex-col font-sans transition-colors duration-200">
       {/* XP Toast Notification */}
@@ -284,15 +451,12 @@ export default function App() {
         </div>
       )}
 
-      {/* TOP BAR: Single row, 3 distinct zones separated by gap-8 */}
+      {/* TOP BAR */}
       <header className="sticky top-0 z-40 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-b border-slate-200 dark:border-slate-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between gap-4 md:gap-8">
           {/* Zone 1: Wordmark */}
           <button
-            onClick={() => {
-              setCurrentSection('curriculum');
-              setOpenedChapterId(null);
-            }}
+            onClick={() => navigateSection('curriculum')}
             className="text-lg sm:text-xl font-bold font-display tracking-tight text-slate-900 dark:text-white whitespace-nowrap shrink-0 flex items-center gap-2 text-left"
           >
             <span>Lycée Futur</span>
@@ -301,10 +465,7 @@ export default function App() {
           {/* Zone 2: Desktop Navigation */}
           <nav className="hidden md:flex items-center gap-5 lg:gap-6 text-sm font-medium text-slate-600 dark:text-slate-300">
             <button
-              onClick={() => {
-                setCurrentSection('curriculum');
-                setOpenedChapterId(null);
-              }}
+              onClick={() => navigateSection('curriculum')}
               className={`hover:text-slate-900 dark:hover:text-white transition-colors whitespace-nowrap shrink-0 flex items-center gap-1.5 ${
                 currentSection === 'curriculum'
                   ? 'text-sky-600 dark:text-sky-400 font-bold'
@@ -315,10 +476,7 @@ export default function App() {
               <span>Cours & Programmes</span>
             </button>
             <button
-              onClick={() => {
-                setCurrentSection('simulations');
-                setOpenedChapterId(null);
-              }}
+              onClick={() => navigateSection('simulations')}
               className={`hover:text-slate-900 dark:hover:text-white transition-colors whitespace-nowrap shrink-0 flex items-center gap-1.5 ${
                 currentSection === 'simulations'
                   ? 'text-sky-600 dark:text-sky-400 font-bold'
@@ -330,10 +488,7 @@ export default function App() {
               <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-sky-100 dark:bg-sky-950 text-sky-700 dark:text-sky-300 font-bold">22</span>
             </button>
             <button
-              onClick={() => {
-                setCurrentSection('exercises');
-                setOpenedChapterId(null);
-              }}
+              onClick={() => navigateSection('exercises')}
               className={`hover:text-slate-900 dark:hover:text-white transition-colors whitespace-nowrap shrink-0 flex items-center gap-1.5 ${
                 currentSection === 'exercises'
                   ? 'text-sky-600 dark:text-sky-400 font-bold'
@@ -345,10 +500,7 @@ export default function App() {
               <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-violet-100 dark:bg-violet-950 text-violet-700 dark:text-violet-300 font-bold">372</span>
             </button>
             <button
-              onClick={() => {
-                setCurrentSection('revision');
-                setOpenedChapterId(null);
-              }}
+              onClick={() => navigateSection('revision')}
               className={`hover:text-slate-900 dark:hover:text-white transition-colors whitespace-nowrap shrink-0 flex items-center gap-1.5 ${
                 currentSection === 'revision'
                   ? 'text-sky-600 dark:text-sky-400 font-bold'
@@ -360,10 +512,7 @@ export default function App() {
               <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 font-bold">51</span>
             </button>
             <button
-              onClick={() => {
-                setCurrentSection('profile');
-                setOpenedChapterId(null);
-              }}
+              onClick={() => navigateSection('profile')}
               className={`hover:text-slate-900 dark:hover:text-white transition-colors whitespace-nowrap shrink-0 flex items-center gap-1.5 ${
                 currentSection === 'profile'
                   ? 'text-sky-600 dark:text-sky-400 font-bold'
@@ -398,7 +547,7 @@ export default function App() {
           </div>
         </div>
 
-        {/* Mobile Header Quick Bar (Ensures seamless access to all sections on phone) */}
+        {/* Mobile Header Quick Bar */}
         <div className="md:hidden overflow-x-auto scrollbar-none flex items-center gap-2 px-3 py-2 bg-slate-100/90 dark:bg-slate-800/90 border-t border-slate-200/80 dark:border-slate-700/80">
           {[
             { id: 'curriculum', label: 'Cours', badge: null, icon: BookOpen },
@@ -412,10 +561,7 @@ export default function App() {
             return (
               <button
                 key={item.id}
-                onClick={() => {
-                  setCurrentSection(item.id as any);
-                  setOpenedChapterId(null);
-                }}
+                onClick={() => navigateSection(item.id as SectionId)}
                 className={`px-3 py-1.5 text-xs font-semibold rounded-xl whitespace-nowrap shrink-0 flex items-center gap-1.5 transition-all shadow-2xs ${
                   isActive
                     ? 'bg-sky-600 text-white shadow-sm'
@@ -445,16 +591,14 @@ export default function App() {
 
       {/* Main Content Area */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-6 pb-28 md:pb-12">
-        {/* If a chapter is opened, show ChapterView */}
         {openedChapter ? (
           <ChapterView
             chapter={openedChapter}
             progress={progress}
-            onBack={() => setOpenedChapterId(null)}
+            onBack={closeChapter}
             onOpenSimulation={(simId) => {
               setActiveSimulationId(simId);
-              setCurrentSection('simulations');
-              setOpenedChapterId(null);
+              navigateSection('simulations');
             }}
             onUpdateChapterProgress={handleUpdateChapterProgress}
             onGainXp={handleGainXp}
@@ -464,7 +608,6 @@ export default function App() {
             {/* SECTION: CURRICULUM */}
             {currentSection === 'curriculum' && (
               <div className="space-y-6">
-                {/* Clean, Airy Header Control Bar */}
                 <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm">
                   <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div>
@@ -482,7 +625,6 @@ export default function App() {
                       </p>
                     </div>
 
-                    {/* View Switcher: Vue Aérée (default, uncluttered) vs Vue Détaillée */}
                     <div className="flex items-center gap-2 self-start md:self-center shrink-0">
                       <div className="flex items-center p-1 bg-slate-100 dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 text-xs">
                         <button
@@ -515,7 +657,6 @@ export default function App() {
 
                   {/* Search and Filters Bar */}
                   <div className="mt-6 pt-5 border-t border-slate-100 dark:border-slate-800/80 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-                    {/* Search Bar */}
                     <div className="relative flex-1 max-w-md">
                       <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
                       <input
@@ -535,7 +676,6 @@ export default function App() {
                       )}
                     </div>
 
-                    {/* Grade Level Selector */}
                     <div className="flex items-center gap-1.5 p-1 bg-slate-100 dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700/60 self-start lg:self-auto">
                       {[
                         { id: 'terminale', label: 'Terminale' },
@@ -583,7 +723,7 @@ export default function App() {
                     ].map((sub) => (
                       <button
                         key={sub.id}
-                        onClick={() => setSelectedSubject(sub.id as any)}
+                        onClick={() => setSelectedSubject(sub.id as SubjectId | 'all')}
                         className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-colors flex items-center gap-1.5 ${
                           selectedSubject === sub.id
                             ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900 shadow-sm'
@@ -633,7 +773,6 @@ export default function App() {
                           ? { label: 'Physique-Chimie', color: 'text-indigo-700 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-950/60 border-indigo-200 dark:border-indigo-800/60' }
                           : { label: 'SVT', color: 'text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 border-emerald-200 dark:border-emerald-800/60' };
 
-                      // Check if chapter has a themed exercise
                       const themedEx = chap.exercises.find((ex) => ex.themeLabel);
 
                       return (
@@ -642,7 +781,6 @@ export default function App() {
                           className="bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 rounded-xl p-5 flex flex-col justify-between shadow-xs hover:shadow-md transition-all group"
                         >
                           <div className="space-y-3">
-                            {/* Top Row: Clean Subject Tag + Official Code + Status */}
                             <div className="flex items-center justify-between text-xs">
                               <div className="flex items-center gap-2">
                                 <span className={`font-semibold px-2 py-0.5 rounded-md border text-[11px] ${subjectBadge.color}`}>
@@ -659,12 +797,18 @@ export default function App() {
                               )}
                             </div>
 
-                            {/* Chapter Title */}
                             <h3 className="text-base font-bold text-slate-900 dark:text-white group-hover:text-sky-600 dark:group-hover:text-sky-400 transition-colors leading-snug">
-                              {chap.title}
+                              <a
+                                href={`/chapitre/${encodeURIComponent(chap.id)}`}
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  openChapter(chap.id);
+                                }}
+                              >
+                                {chap.title}
+                              </a>
                             </h3>
 
-                            {/* Themed Exercise Pill or Lab Tag if present */}
                             <div className="flex flex-wrap items-center gap-1.5 pt-1">
                               {chap.simulationId && (
                                 <span className="text-[11px] font-medium text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/40 px-2 py-0.5 rounded border border-amber-200 dark:border-amber-900/50 flex items-center gap-1">
@@ -678,7 +822,6 @@ export default function App() {
                               )}
                             </div>
 
-                            {/* If NOT compact view, show detailed description and highlights */}
                             {!isCompactView && (
                               <div className="pt-2 space-y-3">
                                 <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
@@ -696,7 +839,6 @@ export default function App() {
                             )}
                           </div>
 
-                          {/* Card Footer: Duration & Open Button */}
                           <div className="mt-5 pt-3.5 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
                             <div className="flex items-center gap-1.5 text-xs text-slate-400 font-medium">
                               <Clock className="w-3.5 h-3.5" />
@@ -705,13 +847,17 @@ export default function App() {
                               <span>{chap.exercises.length} ex. Bac</span>
                             </div>
 
-                            <button
-                              onClick={() => setOpenedChapterId(chap.id)}
+                            <a
+                              href={`/chapitre/${encodeURIComponent(chap.id)}`}
+                              onClick={(e) => {
+                                e.preventDefault();
+                                openChapter(chap.id);
+                              }}
                               className="px-3.5 py-1.5 bg-slate-900 hover:bg-slate-800 text-white dark:bg-white dark:hover:bg-slate-100 dark:text-slate-900 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors shadow-xs"
                             >
                               <span>Étudier</span>
                               <ArrowRight className="w-3 h-3" />
-                            </button>
+                            </a>
                           </div>
                         </div>
                       );
@@ -721,7 +867,7 @@ export default function App() {
               </div>
             )}
 
-            {/* SECTION: SIMULATEURS LABO (22+ simulateurs interactifs) */}
+            {/* SECTION: SIMULATEURS LABO */}
             {currentSection === 'simulations' && (
               <SimulationHub onGainXp={handleGainXp} activeSimId={activeSimulationId} />
             )}
@@ -729,20 +875,18 @@ export default function App() {
             {/* SECTION: EXERCICES CORRIGÉS À THÈMES */}
             {currentSection === 'exercises' && (
               <div className="space-y-6">
-                {/* Header Showcase */}
                 <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm">
                   <div className="flex items-center gap-2 text-xs font-semibold text-violet-600 dark:text-violet-400">
                     <Sparkles className="w-3.5 h-3.5" />
                     <span>BANQUE DE PROBLÈMES TYPES BAC & SUJETS ANCRÉS DANS LE RÉEL</span>
                   </div>
-                  <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white mt-1">
+                  <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white mt-1">
                     Exercices à Thèmes Passionnants
-                  </h2>
+                  </h1>
                   <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1 max-w-3xl leading-relaxed">
                     Révisez les mathématiques, la physique-chimie et la SVT à travers les univers qui vous motivent : jeux vidéo, Formule 1, conquête spatiale, streaming, enquêtes policières et transition écologique.
                   </p>
 
-                  {/* Theme Filter Chips */}
                   <div className="mt-5 pt-4 border-t border-slate-100 dark:border-slate-800/80">
                     <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider block mb-2.5">
                       Choisir une thématique :
@@ -773,7 +917,6 @@ export default function App() {
                     </div>
                   </div>
 
-                  {/* Grade and Subject Filters */}
                   <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800/80 flex flex-wrap items-center justify-between gap-3">
                     <div className="flex items-center gap-1.5 p-1 bg-slate-100 dark:bg-slate-800 rounded-xl">
                       {[
@@ -804,7 +947,7 @@ export default function App() {
                       ].map((sub) => (
                         <button
                           key={sub.id}
-                          onClick={() => setSelectedSubject(sub.id as any)}
+                          onClick={() => setSelectedSubject(sub.id as SubjectId | 'all')}
                           className={`px-2.5 py-1 rounded-md font-medium transition-colors ${
                             selectedSubject === sub.id
                               ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900'
@@ -825,7 +968,6 @@ export default function App() {
                   </div>
                 </div>
 
-                {/* List of Themed Exercises */}
                 {filteredThemedExercises.length === 0 ? (
                   <div className="p-12 text-center bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 space-y-3">
                     <Sparkles className="w-8 h-8 text-slate-400 mx-auto" />
@@ -857,7 +999,6 @@ export default function App() {
                           key={exercise.id}
                           className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden shadow-xs hover:shadow-md transition-all"
                         >
-                          {/* Card Top Banner */}
                           <div className="p-5 border-b border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/30 flex flex-wrap items-center justify-between gap-3">
                             <div className="flex items-center gap-2 flex-wrap">
                               {exercise.themeLabel ? (
@@ -881,17 +1022,20 @@ export default function App() {
                               <span className="text-xs font-semibold text-slate-500">
                                 Barème : {exercise.points} points
                               </span>
-                              <button
-                                onClick={() => setOpenedChapterId(exercise.chapterId)}
+                              <a
+                                href={`/chapitre/${encodeURIComponent(exercise.chapterId)}`}
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  openChapter(exercise.chapterId);
+                                }}
                                 className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-lg text-xs font-semibold flex items-center gap-1 transition-colors"
                               >
                                 <span>Voir le cours</span>
                                 <ArrowRight className="w-3 h-3" />
-                              </button>
+                              </a>
                             </div>
                           </div>
 
-                          {/* Exercise Title and Scenario */}
                           <div className="p-5 space-y-3">
                             <h3 className="text-lg font-bold text-slate-900 dark:text-white leading-snug">
                               {exercise.title}
@@ -901,7 +1045,6 @@ export default function App() {
                             </div>
                           </div>
 
-                          {/* Questions with Interactive Hints & Solutions */}
                           <div className="px-5 pb-5 space-y-4">
                             <div className="text-xs font-bold text-slate-400 uppercase tracking-wider">
                               Questions guidées & barème ({exercise.questions.length} questions) :
@@ -926,7 +1069,6 @@ export default function App() {
                                     </span>
                                   </div>
 
-                                  {/* Hints Section */}
                                   {currentHintLevel > 0 && (
                                     <div className="p-3 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/40 rounded-lg space-y-1.5 text-xs text-amber-900 dark:text-amber-200">
                                       {q.hints.slice(0, currentHintLevel).map((hint, hIdx) => (
@@ -941,7 +1083,6 @@ export default function App() {
                                     </div>
                                   )}
 
-                                  {/* Action Buttons: Hint & Solution */}
                                   <div className="flex items-center gap-3 pt-1">
                                     {currentHintLevel < q.hints.length && (
                                       <button
@@ -978,7 +1119,6 @@ export default function App() {
                                     </button>
                                   </div>
 
-                                  {/* Detailed Solution Steps */}
                                   {isSolutionVisible && (
                                     <div className="pt-3 border-t border-slate-100 dark:border-slate-800 space-y-3">
                                       <div className="space-y-1.5 text-xs text-slate-700 dark:text-slate-300 leading-relaxed font-mono bg-slate-50 dark:bg-slate-950/70 p-3.5 rounded-lg border border-slate-200/80 dark:border-slate-800">
@@ -1019,7 +1159,6 @@ export default function App() {
             {/* SECTION: REVISION TOOLS & 51 OUTILS BAC */}
             {currentSection === 'revision' && (
               <div className="space-y-6">
-                {/* Secondary Sub-Nav for Revision Tools */}
                 <div className="flex flex-wrap items-center gap-2 border-b border-slate-200 dark:border-slate-800 pb-3">
                   {[
                     { id: 'tools_hub', label: '🧰 Boîte des 51 Outils Bac' },
@@ -1031,7 +1170,7 @@ export default function App() {
                   ].map((tab) => (
                     <button
                       key={tab.id}
-                      onClick={() => setActiveRevisionTab(tab.id as any)}
+                      onClick={() => setActiveRevisionTab(tab.id as typeof activeRevisionTab)}
                       className={`px-3.5 py-2 text-xs font-semibold rounded-lg transition-colors whitespace-nowrap ${
                         activeRevisionTab === tab.id
                           ? 'bg-slate-900 text-white dark:bg-white dark:text-slate-900 shadow-sm'
@@ -1043,7 +1182,6 @@ export default function App() {
                   ))}
                 </div>
 
-                {/* Sub-view switcher */}
                 {activeRevisionTab === 'tools_hub' && (
                   <BacToolsHub
                     onGainXp={handleGainXp}
@@ -1104,16 +1242,16 @@ export default function App() {
             <span>Programmes officiels du Ministère de l'Éducation Nationale</span>
           </div>
           <div className="flex items-center gap-4">
-            <span>Mathématiques</span>
+            <a href="/simulateurs" onClick={(e) => { e.preventDefault(); navigateSection('simulations'); }} className="hover:underline">Simulateurs Labo</a>
             <span>·</span>
-            <span>Physique-Chimie</span>
+            <a href="/exercices" onClick={(e) => { e.preventDefault(); navigateSection('exercises'); }} className="hover:underline">Exercices Corrigés</a>
             <span>·</span>
-            <span>SVT</span>
+            <a href="/outils-bac" onClick={(e) => { e.preventDefault(); navigateSection('revision'); }} className="hover:underline">Outils Bac</a>
           </div>
         </div>
       </footer>
 
-      {/* Fixed Mobile Bottom Navigation Bar (Guarantees effortless access to Outils Bac & Labo on phone) */}
+      {/* Fixed Mobile Bottom Navigation Bar */}
       <nav
         aria-label="Navigation mobile"
         className="fixed bottom-0 inset-x-0 z-50 md:hidden bg-white/95 dark:bg-slate-900/95 backdrop-blur-lg border-t border-slate-200 dark:border-slate-800 shadow-2xl py-1.5 px-2 flex items-center justify-around safe-bottom"
@@ -1131,8 +1269,7 @@ export default function App() {
             <button
               key={tab.id}
               onClick={() => {
-                setCurrentSection(tab.id as any);
-                setOpenedChapterId(null);
+                navigateSection(tab.id as SectionId);
                 window.scrollTo({ top: 0, behavior: 'smooth' });
               }}
               className={`flex flex-col items-center justify-center py-1 px-2 rounded-xl transition-all relative min-w-[56px] min-h-[44px] ${
