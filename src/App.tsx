@@ -34,6 +34,7 @@ import {
   Clock,
   Sparkles,
   ArrowRight,
+  ArrowLeft,
   Search,
   Gamepad2,
   Rocket,
@@ -46,17 +47,19 @@ import {
   Lightbulb,
   X,
   LayoutGrid,
-  List
+  List,
+  Scale
 } from 'lucide-react';
 
-type SectionId = 'curriculum' | 'simulations' | 'exercises' | 'revision' | 'profile';
+type SectionId = 'curriculum' | 'simulations' | 'exercises' | 'revision' | 'profile' | 'legal';
 
 const SECTION_PATHS: Record<SectionId, string> = {
   curriculum: '/',
   simulations: '/simulateurs',
   exercises: '/exercices',
   revision: '/outils-bac',
-  profile: '/profil'
+  profile: '/profil',
+  legal: '/mentions-legales'
 };
 
 function getInitialRouteState(): {
@@ -79,6 +82,7 @@ function getInitialRouteState(): {
   if (path === '/exercices') return { section: 'exercises', chapterId: null, grade: 'terminale' };
   if (path === '/outils-bac') return { section: 'revision', chapterId: null, grade: 'terminale' };
   if (path === '/profil') return { section: 'profile', chapterId: null, grade: 'terminale' };
+  if (path === '/mentions-legales') return { section: 'legal', chapterId: null, grade: 'terminale' };
   return { section: 'curriculum', chapterId: null, grade: 'terminale' };
 }
 
@@ -260,6 +264,10 @@ export default function App() {
       title = 'Outils de Révision Bac, Simulateur de Notes & Flashcards | Lycée Futur';
       description =
         'Préparez le Baccalauréat avec 51 outils de révision : simulateur de moyenne Bac coef 100, fiches flash, minuteur Pomodoro et formulaires.';
+    } else if (currentSection === 'legal') {
+      title = 'Mentions Légales & Politique de Confidentialité | Lycée Futur';
+      description =
+        'Mentions légales, informations sur l’éditeur, l’hébergement, la propriété intellectuelle et la gestion des données personnelles de la plateforme Lycée Futur.';
     }
 
     document.title = title;
@@ -1229,6 +1237,102 @@ export default function App() {
                 onResetProgress={handleResetProgress}
               />
             )}
+
+            {/* SECTION: MENTIONS LÉGALES */}
+            {currentSection === 'legal' && (
+              <div className="max-w-4xl mx-auto space-y-6">
+                <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 sm:p-8 shadow-sm space-y-6">
+                  <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-100 dark:border-slate-800 pb-5">
+                    <div>
+                      <div className="flex items-center gap-2 text-xs font-semibold text-sky-600 dark:text-sky-400">
+                        <Scale className="w-4 h-4" />
+                        <span>INFORMATIONS RÉGLEMENTAIRES & CONFIDENTIALITÉ</span>
+                      </div>
+                      <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white mt-1">
+                        Mentions Légales
+                      </h1>
+                      <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                        Conformément aux dispositions de la loi n° 2004-575 du 21 juin 2004 pour la confiance dans l'économie numérique (LCEN).
+                      </p>
+                    </div>
+
+                    <button
+                      onClick={() => navigateSection('curriculum')}
+                      className="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-colors"
+                    >
+                      <ArrowLeft className="w-3.5 h-3.5" />
+                      <span>Retour aux cours</span>
+                    </button>
+                  </div>
+
+                  <div className="space-y-6 text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+                    <section className="space-y-2">
+                      <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white">
+                        1. Éditeur du site
+                      </h2>
+                      <p>
+                        Le site <strong>Lycée Futur</strong> (accessible à l'adresse <a href="https://lyceefutur.com" className="text-sky-600 dark:text-sky-400 hover:underline">https://lyceefutur.com</a>) est une plateforme éducative gratuite dédiée aux élèves de Seconde, Première et Terminale.
+                      </p>
+                      <ul className="list-disc pl-5 space-y-1 text-slate-600 dark:text-slate-400">
+                        <li><strong>Responsable de la publication :</strong> [À compléter : Votre Nom / Prénom ou Dénomination]</li>
+                        <li><strong>Contact électronique :</strong> [À compléter : contact@lyceefutur.com]</li>
+                        <li><strong>Statut :</strong> Éditeur particulier / Projet pédagogique indépendant à vocation non lucrative</li>
+                      </ul>
+                    </section>
+
+                    <section className="space-y-2">
+                      <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white">
+                        2. Hébergement
+                      </h2>
+                      <p>
+                        Le site est hébergé par la société <strong>Vercel Inc.</strong>, située au 440 N Barranca Ave #4133, Covina, CA 91723, États-Unis (Site web : <a href="https://vercel.com" target="_blank" rel="noopener noreferrer" className="text-sky-600 dark:text-sky-400 hover:underline">https://vercel.com</a>).
+                      </p>
+                    </section>
+
+                    <section className="space-y-2">
+                      <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white">
+                        3. Propriété intellectuelle
+                      </h2>
+                      <p>
+                        L'ensemble des ressources pédagogiques, fiches de cours, exercices corrigés, simulateurs interactifs, éléments graphiques et code source présents sur <strong>Lycée Futur</strong> sont protégés par le droit de la propriété intellectuelle.
+                      </p>
+                      <p>
+                        La consultation, le téléchargement et l'impression des cours et exercices sont autorisés pour un usage strictement personnel, scolaire et éducatif. Toute reproduction, diffusion ou exploitation commerciale sans accord préalable de l'éditeur est interdite.
+                      </p>
+                    </section>
+
+                    <section className="space-y-2">
+                      <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white">
+                        4. Données personnelles, stockage local & Cookies
+                      </h2>
+                      <p>
+                        <strong>Lycée Futur</strong> ne requiert aucune création de compte nominatif et ne collecte aucune donnée personnelle directement sur ses serveurs. Votre progression pédagogique (points XP, chapitres validés, simulateur de notes du Bac, préférences d'affichage) est enregistrée uniquement localement sur votre appareil via le stockage interne de votre navigateur (<em>localStorage</em>).
+                      </p>
+                      <p>
+                        Afin de financer la gratuité intégrale de la plateforme et d'en mesurer la fréquentation, le site utilise des services tiers susceptibles de déposer des cookies :
+                      </p>
+                      <ul className="list-disc pl-5 space-y-1 text-slate-600 dark:text-slate-400">
+                        <li>
+                          <strong>Google Analytics (GA4) :</strong> mesure d'audience anonyme permettant d'améliorer l'ergonomie et les contenus pédagogiques.
+                        </li>
+                        <li>
+                          <strong>Google AdSense :</strong> diffusion d'annonces publicitaires non intrusives. Google utilise des cookies pour diffuser des annonces adaptées aux centres d'intérêt des utilisateurs. Vous pouvez désactiver la personnalisation des annonces depuis les <a href="https://adssettings.google.com" target="_blank" rel="noopener noreferrer" className="text-sky-600 dark:text-sky-400 hover:underline">Paramètres des annonces Google</a>.
+                        </li>
+                      </ul>
+                    </section>
+
+                    <section className="space-y-2">
+                      <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white">
+                        5. Limitation de responsabilité
+                      </h2>
+                      <p>
+                        Les cours, formulaires et corrigés proposés sur <strong>Lycée Futur</strong> sont rédigés en conformité avec les programmes officiels de l'Éducation Nationale à des fins d'accompagnement scolaire. Malgré le soin apporté à leur vérification, l'éditeur ne saurait être tenu responsable d'éventuelles erreurs ou omissions.
+                      </p>
+                    </section>
+                  </div>
+                </div>
+              </div>
+            )}
           </>
         )}
       </main>
@@ -1241,12 +1345,24 @@ export default function App() {
             <span aria-hidden="true">·</span>
             <span>Programmes officiels du Ministère de l'Éducation Nationale</span>
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex flex-wrap items-center gap-4">
             <a href="/simulateurs" onClick={(e) => { e.preventDefault(); navigateSection('simulations'); }} className="hover:underline">Simulateurs Labo</a>
             <span>·</span>
             <a href="/exercices" onClick={(e) => { e.preventDefault(); navigateSection('exercises'); }} className="hover:underline">Exercices Corrigés</a>
             <span>·</span>
             <a href="/outils-bac" onClick={(e) => { e.preventDefault(); navigateSection('revision'); }} className="hover:underline">Outils Bac</a>
+            <span>·</span>
+            <a
+              href="/mentions-legales"
+              onClick={(e) => {
+                e.preventDefault();
+                navigateSection('legal');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+              className={`hover:underline ${currentSection === 'legal' ? 'text-sky-600 dark:text-sky-400 font-semibold' : ''}`}
+            >
+              Mentions légales
+            </a>
           </div>
         </div>
       </footer>
