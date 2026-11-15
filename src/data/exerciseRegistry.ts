@@ -8,6 +8,9 @@ import { EXERCISE_BANK_1ERE_SVT } from './exerciseBank1ereSVT';
 import { EXERCISE_BANK_TERMINALE_MATHS } from './exerciseBankTerminaleMaths';
 import { EXERCISE_BANK_TERMINALE_PC } from './exerciseBankTerminalePC';
 import { EXERCISE_BANK_TERMINALE_SVT } from './exerciseBankTerminaleSVT';
+import { EXERCISE_BANK_PART2_2NDE } from './exerciseBankPart2_2nde';
+import { EXERCISE_BANK_PART2_1ERE } from './exerciseBankPart2_1ere';
+import { EXERCISE_BANK_PART2_TERMINALE } from './exerciseBankPart2_Terminale';
 
 export const ALL_BANK_EXERCISES: BankExerciseItem[] = [
   ...EXERCISE_BANK_2NDE_MATHS,
@@ -18,7 +21,10 @@ export const ALL_BANK_EXERCISES: BankExerciseItem[] = [
   ...EXERCISE_BANK_1ERE_SVT,
   ...EXERCISE_BANK_TERMINALE_MATHS,
   ...EXERCISE_BANK_TERMINALE_PC,
-  ...EXERCISE_BANK_TERMINALE_SVT
+  ...EXERCISE_BANK_TERMINALE_SVT,
+  ...EXERCISE_BANK_PART2_2NDE,
+  ...EXERCISE_BANK_PART2_1ERE,
+  ...EXERCISE_BANK_PART2_TERMINALE
 ];
 
 /**

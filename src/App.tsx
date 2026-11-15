@@ -12,12 +12,8 @@ import {
 } from './types';
 import { CURRICULUM_CHAPTERS } from './data/curriculum';
 import { ChapterView } from './components/ChapterView';
-import { TitrationSim } from './components/simulations/TitrationSim';
-import { ProjectileSim } from './components/simulations/ProjectileSim';
-import { OpticsSim } from './components/simulations/OpticsSim';
-import { DnaTranslationSim } from './components/simulations/DnaTranslationSim';
-import { SubductionSim } from './components/simulations/SubductionSim';
-import { TangentDerivativeSim } from './components/simulations/TangentDerivativeSim';
+import { SimulationHub } from './components/simulations/SimulationHub';
+import { BacToolsHub } from './components/revision/BacToolsHub';
 import { FlashcardDeck } from './components/revision/FlashcardDeck';
 import { BacSimulator } from './components/revision/BacSimulator';
 import { FormulaSheet } from './components/revision/FormulaSheet';
@@ -105,8 +101,8 @@ export default function App() {
 
   // Active revision tool tab
   const [activeRevisionTab, setActiveRevisionTab] = useState<
-    'flashcards' | 'pomodoro' | 'bac' | 'formulas' | 'diagnostic'
-  >('flashcards');
+    'tools_hub' | 'flashcards' | 'pomodoro' | 'bac' | 'formulas' | 'diagnostic'
+  >('tools_hub');
 
   // Search query for curriculum
   const [searchQuery, setSearchQuery] = useState<string>('');
@@ -288,95 +284,103 @@ export default function App() {
         </div>
       )}
 
-      {/* TOP BAR CONTRACT: Single row, 3 distinct zones separated by gap-8 */}
+      {/* TOP BAR: Single row, 3 distinct zones separated by gap-8 */}
       <header className="sticky top-0 z-40 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-b border-slate-200 dark:border-slate-800">
-        <div className="max-w-7xl mx-auto px-6 py-3.5 flex items-center justify-between gap-8">
-          {/* Zone 1: Single text wordmark */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between gap-4 md:gap-8">
+          {/* Zone 1: Wordmark */}
           <button
             onClick={() => {
               setCurrentSection('curriculum');
               setOpenedChapterId(null);
             }}
-            className="text-xl font-bold font-display tracking-tight text-slate-900 dark:text-white whitespace-nowrap shrink-0 flex items-center gap-2 text-left"
+            className="text-lg sm:text-xl font-bold font-display tracking-tight text-slate-900 dark:text-white whitespace-nowrap shrink-0 flex items-center gap-2 text-left"
           >
             <span>Lycée Futur</span>
           </button>
 
-          {/* Zone 2: 4-5 concise single-line nav links */}
-          <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-slate-600 dark:text-slate-300">
+          {/* Zone 2: Desktop Navigation */}
+          <nav className="hidden md:flex items-center gap-5 lg:gap-6 text-sm font-medium text-slate-600 dark:text-slate-300">
             <button
               onClick={() => {
                 setCurrentSection('curriculum');
                 setOpenedChapterId(null);
               }}
-              className={`hover:text-slate-900 dark:hover:text-white transition-colors whitespace-nowrap shrink-0 ${
+              className={`hover:text-slate-900 dark:hover:text-white transition-colors whitespace-nowrap shrink-0 flex items-center gap-1.5 ${
                 currentSection === 'curriculum'
                   ? 'text-sky-600 dark:text-sky-400 font-bold'
                   : ''
               }`}
             >
-              Cours & Programmes
+              <BookOpen className="w-4 h-4" />
+              <span>Cours & Programmes</span>
             </button>
             <button
               onClick={() => {
                 setCurrentSection('simulations');
                 setOpenedChapterId(null);
               }}
-              className={`hover:text-slate-900 dark:hover:text-white transition-colors whitespace-nowrap shrink-0 ${
+              className={`hover:text-slate-900 dark:hover:text-white transition-colors whitespace-nowrap shrink-0 flex items-center gap-1.5 ${
                 currentSection === 'simulations'
                   ? 'text-sky-600 dark:text-sky-400 font-bold'
                   : ''
               }`}
             >
-              Simulateurs Labo
+              <FlaskConical className="w-4 h-4" />
+              <span>Simulateurs Labo</span>
+              <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-sky-100 dark:bg-sky-950 text-sky-700 dark:text-sky-300 font-bold">22</span>
             </button>
             <button
               onClick={() => {
                 setCurrentSection('exercises');
                 setOpenedChapterId(null);
               }}
-              className={`hover:text-slate-900 dark:hover:text-white transition-colors whitespace-nowrap shrink-0 ${
+              className={`hover:text-slate-900 dark:hover:text-white transition-colors whitespace-nowrap shrink-0 flex items-center gap-1.5 ${
                 currentSection === 'exercises'
                   ? 'text-sky-600 dark:text-sky-400 font-bold'
                   : ''
               }`}
             >
-              Exercices Corrigés
+              <FileCheck2 className="w-4 h-4" />
+              <span>Exercices Corrigés</span>
+              <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-violet-100 dark:bg-violet-950 text-violet-700 dark:text-violet-300 font-bold">372</span>
             </button>
             <button
               onClick={() => {
                 setCurrentSection('revision');
                 setOpenedChapterId(null);
               }}
-              className={`hover:text-slate-900 dark:hover:text-white transition-colors whitespace-nowrap shrink-0 ${
+              className={`hover:text-slate-900 dark:hover:text-white transition-colors whitespace-nowrap shrink-0 flex items-center gap-1.5 ${
                 currentSection === 'revision'
                   ? 'text-sky-600 dark:text-sky-400 font-bold'
                   : ''
               }`}
             >
-              Outils & Bac
+              <Brain className="w-4 h-4" />
+              <span>Outils & Bac</span>
+              <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 font-bold">51</span>
             </button>
             <button
               onClick={() => {
                 setCurrentSection('profile');
                 setOpenedChapterId(null);
               }}
-              className={`hover:text-slate-900 dark:hover:text-white transition-colors whitespace-nowrap shrink-0 ${
+              className={`hover:text-slate-900 dark:hover:text-white transition-colors whitespace-nowrap shrink-0 flex items-center gap-1.5 ${
                 currentSection === 'profile'
                   ? 'text-sky-600 dark:text-sky-400 font-bold'
                   : ''
               }`}
             >
-              Mon Profil ({progress.xp} XP)
+              <User className="w-4 h-4" />
+              <span>Mon Profil ({progress.xp} XP)</span>
             </button>
           </nav>
 
-          {/* Zone 3: 1 primary action area (Grade Selector + Theme switch) */}
-          <div className="flex items-center gap-3 shrink-0">
+          {/* Zone 3: Grade Selector & Theme switch */}
+          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
             <select
               value={selectedGrade}
               onChange={(e) => setSelectedGrade(e.target.value as GradeLevel)}
-              className="text-xs font-semibold py-1.5 px-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 focus:outline-none"
+              className="text-xs font-semibold py-1.5 px-2 sm:px-2.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 focus:outline-none"
             >
               <option value="terminale">Terminale Spé</option>
               <option value="1ere">Première Spé</option>
@@ -385,7 +389,7 @@ export default function App() {
 
             <button
               onClick={() => setIsDarkMode(!isDarkMode)}
-              className="p-2 text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 rounded-lg border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+              className="p-1.5 sm:p-2 text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 rounded-lg border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
               aria-label="Changer de thème"
               title={isDarkMode ? 'Passer en mode clair' : 'Passer en mode sombre'}
             >
@@ -393,10 +397,54 @@ export default function App() {
             </button>
           </div>
         </div>
+
+        {/* Mobile Header Quick Bar (Ensures seamless access to all sections on phone) */}
+        <div className="md:hidden overflow-x-auto scrollbar-none flex items-center gap-2 px-3 py-2 bg-slate-100/90 dark:bg-slate-800/90 border-t border-slate-200/80 dark:border-slate-700/80">
+          {[
+            { id: 'curriculum', label: 'Cours', badge: null, icon: BookOpen },
+            { id: 'simulations', label: 'Labo', badge: '22', icon: FlaskConical },
+            { id: 'exercises', label: 'Exercices', badge: '372', icon: FileCheck2 },
+            { id: 'revision', label: 'Outils Bac', badge: '51', icon: Brain, isPrimary: true },
+            { id: 'profile', label: 'Profil', badge: `${progress.xp} XP`, icon: User },
+          ].map((item) => {
+            const isActive = currentSection === item.id;
+            const Icon = item.icon;
+            return (
+              <button
+                key={item.id}
+                onClick={() => {
+                  setCurrentSection(item.id as any);
+                  setOpenedChapterId(null);
+                }}
+                className={`px-3 py-1.5 text-xs font-semibold rounded-xl whitespace-nowrap shrink-0 flex items-center gap-1.5 transition-all shadow-2xs ${
+                  isActive
+                    ? 'bg-sky-600 text-white shadow-sm'
+                    : item.isPrimary
+                    ? 'bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-300 dark:border-emerald-700 text-emerald-800 dark:text-emerald-300'
+                    : 'bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300'
+                }`}
+              >
+                <Icon className="w-3.5 h-3.5 shrink-0" />
+                <span>{item.label}</span>
+                {item.badge && (
+                  <span
+                    className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold ${
+                      isActive
+                        ? 'bg-white/25 text-white'
+                        : 'bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300'
+                    }`}
+                  >
+                    {item.badge}
+                  </span>
+                )}
+              </button>
+            );
+          })}
+        </div>
       </header>
 
       {/* Main Content Area */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-6 py-8">
+      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-6 pb-28 md:pb-12">
         {/* If a chapter is opened, show ChapterView */}
         {openedChapter ? (
           <ChapterView
@@ -673,69 +721,9 @@ export default function App() {
               </div>
             )}
 
-            {/* SECTION: SIMULATEURS LABO */}
+            {/* SECTION: SIMULATEURS LABO (22+ simulateurs interactifs) */}
             {currentSection === 'simulations' && (
-              <div className="space-y-6">
-                <div>
-                  <div className="flex items-center gap-2 text-xs font-semibold text-sky-600 dark:text-sky-400">
-                    <span>LABORATOIRE INTERACTIF</span>
-                    <span aria-hidden="true">·</span>
-                    <span>EXPÉRIMENTATIONS & SIMULATIONS EN DIRECT</span>
-                  </div>
-                  <h2 className="text-2xl font-bold text-slate-900 dark:text-white mt-0.5">
-                    Laboratoire Virtuel de Sciences
-                  </h2>
-                  <p className="text-xs text-slate-500 mt-1 max-w-2xl">
-                    Manipulez les paramètres expérimentaux, visualisez les vecteurs et les équations en temps réel pour comprendre intuitivement les phénomènes physiques, chimiques et biologiques.
-                  </p>
-                </div>
-
-                {/* Simulation Selector Tabs */}
-                <div className="flex flex-wrap items-center gap-2 border-b border-slate-200 dark:border-slate-800 pb-3">
-                  {[
-                    { id: 'titration', label: '1. Titrage pH-métrique (Chimie)' },
-                    { id: 'projectile', label: '2. Balistique & Newton (Physique)' },
-                    { id: 'optics', label: '3. Banc d\'Optique (Physique)' },
-                    { id: 'translation_dna', label: '4. Traduction & Mutations (SVT)' },
-                    { id: 'subduction', label: '5. Zone de Subduction (SVT)' },
-                    { id: 'tangent_deriv', label: '6. Tangente & Dérivée (Maths)' }
-                  ].map((sim) => (
-                    <button
-                      key={sim.id}
-                      onClick={() => setActiveSimulationId(sim.id)}
-                      className={`px-3.5 py-2 text-xs font-semibold rounded-lg transition-colors whitespace-nowrap ${
-                        activeSimulationId === sim.id
-                          ? 'bg-sky-600 text-white shadow-sm'
-                          : 'bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
-                      }`}
-                    >
-                      {sim.label}
-                    </button>
-                  ))}
-                </div>
-
-                {/* Render Selected Simulation Component */}
-                <div>
-                  {activeSimulationId === 'titration' && (
-                    <TitrationSim onGainXp={handleGainXp} />
-                  )}
-                  {activeSimulationId === 'projectile' && (
-                    <ProjectileSim onGainXp={handleGainXp} />
-                  )}
-                  {activeSimulationId === 'optics' && (
-                    <OpticsSim onGainXp={handleGainXp} />
-                  )}
-                  {activeSimulationId === 'translation_dna' && (
-                    <DnaTranslationSim onGainXp={handleGainXp} />
-                  )}
-                  {activeSimulationId === 'subduction' && (
-                    <SubductionSim onGainXp={handleGainXp} />
-                  )}
-                  {activeSimulationId === 'tangent_deriv' && (
-                    <TangentDerivativeSim onGainXp={handleGainXp} />
-                  )}
-                </div>
-              </div>
+              <SimulationHub onGainXp={handleGainXp} activeSimId={activeSimulationId} />
             )}
 
             {/* SECTION: EXERCICES CORRIGÉS À THÈMES */}
@@ -1028,17 +1016,18 @@ export default function App() {
               </div>
             )}
 
-            {/* SECTION: REVISION TOOLS */}
+            {/* SECTION: REVISION TOOLS & 51 OUTILS BAC */}
             {currentSection === 'revision' && (
               <div className="space-y-6">
                 {/* Secondary Sub-Nav for Revision Tools */}
                 <div className="flex flex-wrap items-center gap-2 border-b border-slate-200 dark:border-slate-800 pb-3">
                   {[
-                    { id: 'flashcards', label: 'Fiches Mémo (SRS Leitner)' },
-                    { id: 'pomodoro', label: 'Minuteur Pomodoro (25/5 min)' },
-                    { id: 'bac', label: 'Simulateur du Bac (Coef 100)' },
-                    { id: 'formulas', label: 'Formulaire Intégral' },
-                    { id: 'diagnostic', label: 'Diagnostic Personnalisé' }
+                    { id: 'tools_hub', label: '🧰 Boîte des 51 Outils Bac' },
+                    { id: 'pomodoro', label: '⏱️ Pomodoro (25/5 min)' },
+                    { id: 'bac', label: '🎯 Simulateur Coef 100' },
+                    { id: 'flashcards', label: '🃏 Fiches Flash (SRS)' },
+                    { id: 'formulas', label: '📐 Formulaire Intégral' },
+                    { id: 'diagnostic', label: '🧭 Diagnostic Révision' }
                   ].map((tab) => (
                     <button
                       key={tab.id}
@@ -1055,6 +1044,18 @@ export default function App() {
                 </div>
 
                 {/* Sub-view switcher */}
+                {activeRevisionTab === 'tools_hub' && (
+                  <BacToolsHub
+                    onGainXp={handleGainXp}
+                    onOpenTool={(toolId) => {
+                      if (toolId === 'pomodoro') setActiveRevisionTab('pomodoro');
+                      else if (toolId === 'sim_bac') setActiveRevisionTab('bac');
+                      else if (toolId.startsWith('formulaire_') || toolId === 'formulaire') setActiveRevisionTab('formulas');
+                      else if (toolId === 'flashcards_leitner') setActiveRevisionTab('flashcards');
+                      else if (toolId === 'diagnostic') setActiveRevisionTab('diagnostic');
+                    }}
+                  />
+                )}
                 {activeRevisionTab === 'flashcards' && (
                   <FlashcardDeck
                     progress={progress}
@@ -1094,8 +1095,8 @@ export default function App() {
         )}
       </main>
 
-      {/* Clean Footer adhering to Section 1.B */}
-      <footer className="mt-auto border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 py-6 text-xs text-slate-500">
+      {/* Clean Footer */}
+      <footer className="mt-auto border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 py-6 mb-16 md:mb-0 text-xs text-slate-500">
         <div className="max-w-7xl mx-auto px-6 flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-2">
             <span className="font-bold text-slate-800 dark:text-slate-200">Lycée Futur</span>
@@ -1111,6 +1112,54 @@ export default function App() {
           </div>
         </div>
       </footer>
+
+      {/* Fixed Mobile Bottom Navigation Bar (Guarantees effortless access to Outils Bac & Labo on phone) */}
+      <nav
+        aria-label="Navigation mobile"
+        className="fixed bottom-0 inset-x-0 z-50 md:hidden bg-white/95 dark:bg-slate-900/95 backdrop-blur-lg border-t border-slate-200 dark:border-slate-800 shadow-2xl py-1.5 px-2 flex items-center justify-around safe-bottom"
+      >
+        {[
+          { id: 'curriculum', label: 'Cours', icon: BookOpen },
+          { id: 'simulations', label: 'Labo', badge: '22', icon: FlaskConical },
+          { id: 'exercises', label: 'Exos', badge: '372', icon: FileCheck2 },
+          { id: 'revision', label: 'Outils Bac', badge: '51', icon: Brain, isPrimary: true },
+          { id: 'profile', label: 'Profil', icon: User },
+        ].map((tab) => {
+          const isActive = currentSection === tab.id;
+          const Icon = tab.icon;
+          return (
+            <button
+              key={tab.id}
+              onClick={() => {
+                setCurrentSection(tab.id as any);
+                setOpenedChapterId(null);
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+              className={`flex flex-col items-center justify-center py-1 px-2 rounded-xl transition-all relative min-w-[56px] min-h-[44px] ${
+                isActive
+                  ? 'text-sky-600 dark:text-sky-400 font-bold scale-105'
+                  : tab.isPrimary
+                  ? 'text-emerald-600 dark:text-emerald-400 font-semibold'
+                  : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
+              }`}
+            >
+              <div className="relative">
+                <Icon className={`w-5 h-5 ${isActive ? 'stroke-[2.5]' : 'stroke-[1.75]'}`} />
+                {tab.badge && (
+                  <span className={`absolute -top-1.5 -right-3 px-1 py-0.2 text-[9px] font-black rounded-full leading-none shadow-xs ${
+                    tab.isPrimary ? 'bg-emerald-600 text-white' : 'bg-violet-600 text-white'
+                  }`}>
+                    {tab.badge}
+                  </span>
+                )}
+              </div>
+              <span className="text-[10px] mt-1 tracking-tight">
+                {tab.label}
+              </span>
+            </button>
+          );
+        })}
+      </nav>
     </div>
   );
 }
