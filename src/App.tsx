@@ -1274,9 +1274,8 @@ export default function App() {
                         Le site <strong>Lycée Futur</strong> (accessible à l'adresse <a href="https://lyceefutur.com" className="text-sky-600 dark:text-sky-400 hover:underline">https://lyceefutur.com</a>) est une plateforme éducative gratuite dédiée aux élèves de Seconde, Première et Terminale.
                       </p>
                       <ul className="list-disc pl-5 space-y-1 text-slate-600 dark:text-slate-400">
-                        <li><strong>Responsable de la publication :</strong> [À compléter : Votre Nom / Prénom ou Dénomination]</li>
-                        <li><strong>Contact électronique :</strong> [À compléter : contact@lyceefutur.com]</li>
-                        <li><strong>Statut :</strong> Éditeur particulier / Projet pédagogique indépendant à vocation non lucrative</li>
+                        <li><strong>Contact électronique :</strong> [À compléter : sharinghistories955@gmail.com]</li>
+                        <li><strong>Statut :</strong> Éditeur particulier / Projet pédagogique </li>
                       </ul>
                     </section>
 
